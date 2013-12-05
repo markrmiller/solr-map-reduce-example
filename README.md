@@ -1,0 +1,2 @@
+solr-map-reduce-example
+=======================

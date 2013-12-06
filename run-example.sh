@@ -12,8 +12,8 @@ tmpdir=/tmp/solr-map-reduce
 #######################
 
 # Using a recent Solr nightly build from Solr trunk
-solr_distrib="solr-5.0-2013-12-03_09-42-08"
-solr_distrib_url="https://builds.apache.org/job/Solr-Artifacts-trunk/lastSuccessfulBuild/artifact/solr/package/$hadoop_distrib.tgz"
+solr_distrib="solr-5.0-2013-12-06_19-31-21"
+solr_distrib_url="https://builds.apache.org/job/Solr-Artifacts-trunk/2377/artifact/solr/package/$solr_distrib.tgz"
 
 # you should replace with a local mirror. Find one at http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.2.0/
 hadoop_distrib="hadoop-2.2.0"
@@ -46,20 +46,18 @@ export YARN_COMMON_HOME=$hadoop_conf_dir
 rm -f -r $tmpdir
 
 
-# copy the hadoop conf files to the tmp dir
-# so that we have an 
-mkdir -p $hadoop_conf_dir
-cp -r $hadoop_conf $hadoop_conf_dir
-
-
 ## Get Hadoop and Start HDFS+YARN
 #######################
 
 # get hadoop
 if [ ! -f "$hadoop_distrib.tar.gz" ]; then
     echo "Download hadoop dist $hadoop_distrib.tar.gz"
-    wget -q "$hadoop_distrib_url"
-
+    wget "$hadoop_distrib_url"
+    if [[ $? -ne 0 ]]
+    then
+      echo "Failed to download hadoop at $hadoop_distrib"
+      exit 1
+    fi
 else
     echo "hadoop distrib already exists"
 fi
@@ -67,6 +65,11 @@ fi
 # extract hadoop
 if [ ! -d "$hadoop_distrib" ]; then
     tar -zxf "$hadoop_distrib.tar.gz"
+    if [[ $? -ne 0 ]]
+    then
+      echo "Failed to extract hadoop from $hadoop_distrib.tar.gz"
+      exit 1
+    fi
 else
     echo "$hadoop_distrib.tar.gz already extracted"
 fi
@@ -130,8 +133,13 @@ $hadoop_distrib/bin/hadoop --config $hadoop_conf_dir fs -put $samplefile hdfs://
 
 # download solr
 if [ ! -f "$solr_distrib.tgz" ]; then
-    echo "Download hadoop dist $solr_distrib.tgz"
-    wget -q "$solr_distrib_url"
+    echo "Download solr dist $solr_distrib.tgz"
+    wget "$solr_distrib_url"
+    if [[ $? -ne 0 ]]
+    then
+      echo "Failed to download Solr at $solr_distrib_url"
+      exit 1
+    fi
 else
     echo "solr distrib already exists"
 fi
@@ -139,6 +147,11 @@ fi
 # extract solr
 if [ ! -d "$solr_distrib" ]; then
     tar -zxf "$solr_distrib.tgz"
+    if [[ $? -ne 0 ]]
+    then
+      echo "Failed to extract Solr from $solr_distrib.tgz"
+      exit 1
+    fi
 else
     echo "$solr_distrib.tgz already extracted"
 fi
@@ -195,7 +208,8 @@ dir4=`readlink -f "$solr_distrib/contrib/morphlines-core/lib/*"`
 dir5=`readlink -f "$solr_distrib/contrib/morphlines-cell/lib/*"`
 dir6=`readlink -f "$solr_distrib/contrib/extraction/lib/*"`
 dir7=`readlink -f "$solr_distrib/example/solr-webapp/webapp/WEB-INF/lib/*"`
-echo "classpath: $dir1:$dir2:$dir3:$dir4:$dir5:$dir6:$dir7"
+
+#echo "classpath: $dir1:$dir2:$dir3:$dir4:$dir5:$dir6:$dir7"
 export HADOOP_CLASSPATH="$dir1:$dir2:$dir3:$dir4:$dir5:$dir6:$dir7"
 
 
@@ -209,6 +223,6 @@ lib7=`ls -m $dir7*.jar | tr -d ' \n'`
 
 libjar="$lib1,$lib2,$lib3,$lib4,$lib5,$lib6,$lib7"
 
-echo "libjar: $libjar"
+# echo "libjar: $libjar"
 
-$hadoop_distrib/bin/hadoop --config $hadoop_conf_dir jar $solr_distrib/dist/solr-map-reduce-5.0-SNAPSHOT.jar -D 'mapred.child.java.opts=-Xmx500m' -libjars "$libjar" --morphline-file readAvroContainer.conf --zk-host 127.0.0.1:9983 --output-dir hdfs://127.0.0.1:8020/outdir --collection $collection --log4j log4j.properties --go-live --verbose hdfs://127.0.0.1:8020/indir
+$hadoop_distrib/bin/hadoop --config $hadoop_conf_dir jar $solr_distrib/dist/solr-map-reduce-*.jar -D 'mapred.child.java.opts=-Xmx500m' -libjars "$libjar" --morphline-file readAvroContainer.conf --zk-host 127.0.0.1:9983 --output-dir hdfs://127.0.0.1:8020/outdir --collection $collection --log4j log4j.properties --go-live --verbose hdfs://127.0.0.1:8020/indir

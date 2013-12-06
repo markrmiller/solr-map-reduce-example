@@ -17,12 +17,33 @@ Download the repository files using the 'Download ZIP' button and extract them t
       bash run-example.sh
 
 
+Files
+----------------------
+
+log4j.properties - the log4j config file attached to the map-reduce job
+
+readAvroContainer.conf - a Morphline for reading avro files
+
+run-example.sh - the main script that downloads and runs everything
+
+sample-statuses-20120906-141433-medium.avro - sample Twitter format data
+
+schema.xml - a schema for the Twitter format data
+
 Web URLs
 ----------------------
 
 Solr http://127.0.0.1:8983/solr
 NameNode http://127.0.0.1:50075
 Yarn http://127.0.0.1:8042
+
+
+Links
+----------------------
+
+Running Solr on HDFS - https://cwiki.apache.org/confluence/display/solr/Running+Solr+on+HDFS
+
+Morphlines - http://cloudera.github.io/cdk/docs/current/cdk-morphlines/index.html
 
 
 Errata

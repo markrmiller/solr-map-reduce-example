@@ -28,9 +28,7 @@ hadoop_distrib_url="http://www.eng.lsu.edu/mirrors/apache/hadoop/common/hadoop-2
 # collection to work with
 collection=collection1
 
-
-hadoop_conf="hadoop/conf"
-hadoop_conf_dir="$tmpdir/hadoop/conf"
+hadoop_conf_dir=`readlink -f "hadoop_conf/conf"`
 
 hadoopHome=`readlink -f "$hadoop_distrib"`
 echo "HADOOP_HOME=$hadoopHome"
@@ -48,11 +46,9 @@ export YARN_COMMON_HOME=$hadoop_conf_dir
 rm -f -r $tmpdir
 
 
-# extract the hadoop conf files
-tar -zxf "hadoop_conf.tar.gz"
-
 # copy the hadoop conf files to the tmp dir
-mkdir -p $tmpdir/hadoop
+# so that we have an 
+mkdir -p $hadoop_conf_dir
 cp -r $hadoop_conf $hadoop_conf_dir
 
 
@@ -116,8 +112,6 @@ $hadoop_distrib/sbin/yarn-daemon.sh --config $hadoop_conf_dir start resourcemana
 echo "start nodemanager"
 $hadoop_distrib/sbin/yarn-daemon.sh --config $hadoop_conf_dir start nodemanager
 
-#echo "start jobhistoryserver"
-#$hadoop_distrib/sbin/yarn-daemon.sh --config $hadoop_conf_dir start historyserver
 
 # hack wait for datanode to be ready and happy and able
 sleep 10

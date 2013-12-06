@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+
+  <property>
+    <name>hadoop.tmp.dir</name>
+    <value>file:///tmp/solr-map-reduce/tmp</value>
+  </property>
+
+  <property>
+    <name>dfs.namenode.name.dir</name>
+    <value>file:///tmp/solr-map-reduce/data/1/mmname1,file:///tmp/solr-map-reduce/data/2/mmname2</value>
+  </property>
+
+  <property>
+    <name>dfs.datanode.data.dir</name>
+    <value>file:///tmp/solr-map-reduce/data/2/mmdata1,file:///tmp/solr-map-reduce/data/3/mmdata2</value>
+  </property>
+
+  <property>
+    <name>dfs.namenode.checkpoint.dir</name>
+    <value>file:///tmp/solr-map-reduce/data/1/mmchkpt1,file:///tmp/solr-map-reduce/data/2/mmchkpt2</value>
+ </property>
+
+  <property>
+    <name>dfs.permissions</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>dfs.replication</name>
+    <value>1</value>
+  </property>
+
+  <property>
+    <name>dfs.replication.max</name>
+    <value>1</value>
+  </property>
+  
+  <property>
+    <name>dfs.webhdfs.enabled</name>
+    <value>true</value>
+  </property>
+</configuration>
+

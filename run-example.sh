@@ -2,7 +2,8 @@
 
 # EXAMPLE SCRIPT - Start hdfs, yarn, and solr - then build the indexes with mapreduce and deploy them to Solr
 #
-# Requires: Solr trunk Java 1.7+
+# Requires: Solr trunk Java 1.7+, curl
+# Should run on linux/OSX.
 #######################
 
 # this gets hard coded in the configs - keep in sync
@@ -28,15 +29,21 @@ hadoop_distrib_url="http://www.eng.lsu.edu/mirrors/apache/hadoop/common/hadoop-2
 # collection to work with
 collection=collection1
 
-hadoop_conf_dir=`readlink -f "hadoop_conf/conf"`
+# return absolute path
+function absPath {
+  echo $(cd $(dirname $1); pwd)/$(basename $1)
+}
 
-hadoopHome=`readlink -f "$hadoop_distrib"`
+hadoop_conf_dir=`absPath "hadoop_conf/conf"`
+echo "hadoop_conf: $hadoop_conf_dir"
+
+hadoopHome=`absPath "$hadoop_distrib"`
 echo "HADOOP_HOME=$hadoopHome"
 export HADOOP_HOME=$hadoopHome
 export HADOOP_MAPRED_HOME=$hadoopHome
 export HADOOP_COMMON_HOME=$hadoopHome
 export HADOOP_HDFS_HOME=$hadoopHome
-export YARN_HOME=$hadoopHome
+export YARN_HOME=$hadoopHomeabsPathabsPath
 export HADOOP_LOG_DIR=$tmpdir/logs
 export HADOOP_CONF_DIR=$hadoop_conf_dir
 export YARN_CONF_DIR=$hadoop_conf_dir
@@ -51,8 +58,7 @@ rm -f -r $tmpdir
 
 # get hadoop
 if [ ! -f "$hadoop_distrib.tar.gz" ]; then
-    echo "Download hadoop dist $hadoop_distrib.tar.gz"
-    wget "$hadoop_distrib_url"
+    curl -o $hadoop_distrib.tar.gz "$hadoop_distrib_url" 
     if [[ $? -ne 0 ]]
     then
       echo "Failed to download hadoop at $hadoop_distrib"
@@ -133,8 +139,8 @@ $hadoop_distrib/bin/hadoop --config $hadoop_conf_dir fs -put $samplefile hdfs://
 
 # download solr
 if [ ! -f "$solr_distrib.tgz" ]; then
-    echo "Download solr dist $solr_distrib.tgz"
-    wget "$solr_distrib_url"
+    echo "Download solr dist $solr_distrib.tgz "
+    curl -o $solr_distrib.tgz "$solr_distrib_url"
     if [[ $? -ne 0 ]]
     then
       echo "Failed to download Solr at $solr_distrib_url"
@@ -166,6 +172,7 @@ rm -r -f example/solr/zoo_data
 rm -r -f example/solr/collection1/data
 rm -f example/example.log
 
+#  tar -zxf
 unzip -o example/webapps/solr.war -d example/solr-webapp/webapp
 
 echo "copy in twitter schema.xml file"
@@ -180,11 +187,11 @@ java -classpath "example/solr-webapp/webapp/WEB-INF/lib/*:example/lib/ext/*" org
 
 cd example
 java -DSTOP.PORT=7983 -DSTOP.KEY=key -jar start.jar --stop
-java -DzkRun -DnumShards=2 -Dsolr.directoryFactory=solr.HdfsDirectoryFactory -Dsolr.lock.type=hdfs -Dsolr.hdfs.home=hdfs://127.0.0.1:8020/solr1 -Dsolr.hdfs.confdir=$hadoop_conf_dir -DSTOP.PORT=7983 -DSTOP.KEY=key -jar start.jar 1>example.log 2>&1 &
+java -Xmx512m -DzkRun -DnumShards=2 -Dsolr.directoryFactory=solr.HdfsDirectoryFactory -Dsolr.lock.type=hdfs -Dsolr.hdfs.home=hdfs://127.0.0.1:8020/solr1 -Dsolr.hdfs.confdir=$hadoop_conf_dir -DSTOP.PORT=7983 -DSTOP.KEY=key -jar start.jar 1>example.log 2>&1 &
 
 cd ../example2
 java -DSTOP.PORT=6574 -DSTOP.KEY=key -jar start.jar --stop
-java -Djetty.port=7574 -DzkHost=127.0.0.1:9983 -DnumShards=2 -Dsolr.directoryFactory=solr.HdfsDirectoryFactory -Dsolr.lock.type=hdfs -Dsolr.hdfs.home=hdfs://127.0.0.1:8020/solr2 -Dsolr.hdfs.confdir=$hadoop_conf_dir -DSTOP.PORT=6574 -DSTOP.KEY=key -jar start.jar 1>example2.log 2>&1 &
+java -Xmx512m -Djetty.port=7574 -DzkHost=127.0.0.1:9983 -DnumShards=2 -Dsolr.directoryFactory=solr.HdfsDirectoryFactory -Dsolr.lock.type=hdfs -Dsolr.hdfs.home=hdfs://127.0.0.1:8020/solr2 -Dsolr.hdfs.confdir=$hadoop_conf_dir -DSTOP.PORT=6574 -DSTOP.KEY=key -jar start.jar 1>example2.log 2>&1 &
 
 # wait for solr to be ready
 sleep 15
@@ -201,28 +208,28 @@ rm -f $solr_distrib/dist/solrj-lib/log4j-*
 
 # setup classpath
 # @see {solr_dist}/example/scripts/map-reduce/set-map-reduce-classpath.sh (or similiar - file contents and name in flux)
-dir1=`readlink -f "$solr_distrib/dist/*"`
-dir2=`readlink -f "$solr_distrib/dist/solrj-lib/*"`
-dir3=`readlink -f "$solr_distrib/contrib/map-reduce/lib/*"`
-dir4=`readlink -f "$solr_distrib/contrib/morphlines-core/lib/*"`
-dir5=`readlink -f "$solr_distrib/contrib/morphlines-cell/lib/*"`
-dir6=`readlink -f "$solr_distrib/contrib/extraction/lib/*"`
-dir7=`readlink -f "$solr_distrib/example/solr-webapp/webapp/WEB-INF/lib/*"`
+dir1=`absPath "$solr_distrib/dist"`
+dir2=`absPath "$solr_distrib/dist/solrj-lib"`
+dir3=`absPath "$solr_distrib/contrib/map-reduce/lib"`
+dir4=`absPath "$solr_distrib/contrib/morphlines-core/lib"`
+dir5=`absPath "$solr_distrib/contrib/morphlines-cell/lib"`
+dir6=`absPath "$solr_distrib/contrib/extraction/lib"`
+dir7=`absPath "$solr_distrib/example/solr-webapp/webapp/WEB-INF/lib"`
 
-#echo "classpath: $dir1:$dir2:$dir3:$dir4:$dir5:$dir6:$dir7"
-export HADOOP_CLASSPATH="$dir1:$dir2:$dir3:$dir4:$dir5:$dir6:$dir7"
+#echo "classpath: $dir1/*:$dir2/*:$dir3/*:$dir4/*:$dir5/*:$dir6/*:$dir7/*"
+export HADOOP_CLASSPATH="$dir1/*:$dir2/*:$dir3/*:$dir4/*:$dir5/*:$dir6/*:$dir7/*"
 
 
-lib1=`ls -m $dir1*.jar | tr -d ' \n'`
-lib2=`ls -m $dir2*.jar | tr -d ' \n'`
-lib3=`ls -m $dir3*.jar | tr -d ' \n'`
-lib4=`ls -m $dir4*.jar | tr -d ' \n'`
-lib5=`ls -m $dir5*.jar | tr -d ' \n'`
-lib6=`ls -m $dir6*.jar | tr -d ' \n'`
-lib7=`ls -m $dir7*.jar | tr -d ' \n'`
+lib1=`ls -m $dir1/*.jar | tr -d ' \n'`
+lib2=`ls -m $dir2/*.jar | tr -d ' \n'`
+lib3=`ls -m $dir3/*.jar | tr -d ' \n'`
+lib4=`ls -m $dir4/*.jar | tr -d ' \n'`
+lib5=`ls -m $dir5/*.jar | tr -d ' \n'`
+lib6=`ls -m $dir6/*.jar | tr -d ' \n'`
+lib7=`ls -m $dir7/*.jar | tr -d ' \n'`
 
 libjar="$lib1,$lib2,$lib3,$lib4,$lib5,$lib6,$lib7"
 
-# echo "libjar: $libjar"
+#echo "libjar: $libjar"
 
-$hadoop_distrib/bin/hadoop --config $hadoop_conf_dir jar $solr_distrib/dist/solr-map-reduce-*.jar -D 'mapred.child.java.opts=-Xmx500m' -libjars "$libjar" --morphline-file readAvroContainer.conf --zk-host 127.0.0.1:9983 --output-dir hdfs://127.0.0.1:8020/outdir --collection $collection --log4j log4j.properties --go-live --verbose hdfs://127.0.0.1:8020/indir
+$hadoop_distrib/bin/hadoop --config $hadoop_conf_dir jar $solr_distrib/dist/solr-map-reduce-*.jar -D 'mapred.child.java.opts=-Xmx500m' -libjars "$libjar" --morphline-file readAvroContainer.conf --zk-host 127.0.0.1:9983 --output-dir hdfs://127.0.0.1:8020/outdir --collection $collection --log4j log4j.properties --go-live --verbose "hdfs://127.0.0.1:8020/indir"

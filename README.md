@@ -45,6 +45,7 @@ Software Versions
 This is currently using:
 
 Hadoop 2.2.0
+
 A recent nightly build of Solr 5X trunk
 
 

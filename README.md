@@ -17,6 +17,14 @@ Download the repository files using the 'Download ZIP' button and extract them t
       bash run-example.sh
 
 
+Stopping the Example
+----------------------
+
+Run the included stop script.
+
+      bash stop-example.sh
+
+
 Files
 ----------------------
 

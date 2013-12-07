@@ -28,15 +28,17 @@ Run the included stop script.
 Files
 ----------------------
 
+run-example.sh - the main script that downloads and runs everything
+
+stop-example.sh - a script to stop the services started by run-example.sh
+
 log4j.properties - the log4j config file attached to the map-reduce job
 
 readAvroContainer.conf - a Morphline for reading avro files
 
-run-example.sh - the main script that downloads and runs everything
-
 sample-statuses-20120906-141433-medium.avro - sample Twitter format data
 
-schema.xml - a schema for the Twitter format data
+schema.xml - a schema for the sample Twitter formated data
 
 
 Software Versions

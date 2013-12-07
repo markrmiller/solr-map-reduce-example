@@ -38,6 +38,16 @@ sample-statuses-20120906-141433-medium.avro - sample Twitter format data
 
 schema.xml - a schema for the Twitter format data
 
+
+Software Versions
+----------------------
+
+This is currently using:
+
+Hadoop 2.2.0
+A recent nightly build of Solr 5X trunk
+
+
 Web URLs
 ----------------------
 

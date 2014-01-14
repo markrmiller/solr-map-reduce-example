@@ -13,6 +13,9 @@ hadoop-*/sbin/hadoop-daemon.sh --config $hadoop_conf_dir --script hdfs stop name
 echo "stop any running datanode"
 hadoop-*/sbin/hadoop-daemon.sh --config $hadoop_conf_dir --script hdfs stop datanode
 
+echo "stop any running resourcemanager"
+hadoop-*/sbin/yarn-daemon.sh --config $hadoop_conf_dir stop resourcemanager
+
 echo "stop any running nodemanager"
 hadoop-*/sbin/yarn-daemon.sh --config $hadoop_conf_dir stop nodemanager
 

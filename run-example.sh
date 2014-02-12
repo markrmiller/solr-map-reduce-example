@@ -13,7 +13,7 @@ tmpdir=/tmp/solr-map-reduce
 #######################
 
 # Using a recent Solr nightly build from Solr trunk
-solr_distrib="solr-4.7-2014-02-11_09-08-03"
+solr_distrib="solr-4.7-2014-02-12_02-54-24"
 solr_distrib_url="https://builds.apache.org/job/Solr-Artifacts-4.x/lastSuccessfulBuild/artifact/solr/package/$solr_distrib.tgz"
 
 # you should replace with a local mirror. Find one at http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.2.0/
@@ -196,34 +196,6 @@ cd ../..
 ## Build an index with map-reduce and deploy it to SolrCloud
 #######################
 
-# we don't want to upload logging jars, let's just remove them for now
-rm -f $solr_distrib/dist/solrj-lib/slf4j-*
-rm -f $solr_distrib/dist/solrj-lib/log4j-*
+source $solr_distrib/example/scripts/map-reduce/set-map-reduce-classpath.sh
 
-# setup classpath
-# @see {solr_dist}/example/scripts/map-reduce/set-map-reduce-classpath.sh (or similiar - file contents and name in flux)
-dir1=`absPath "$solr_distrib/dist"`
-dir2=`absPath "$solr_distrib/dist/solrj-lib"`
-dir3=`absPath "$solr_distrib/contrib/map-reduce/lib"`
-dir4=`absPath "$solr_distrib/contrib/morphlines-core/lib"`
-dir5=`absPath "$solr_distrib/contrib/morphlines-cell/lib"`
-dir6=`absPath "$solr_distrib/contrib/extraction/lib"`
-dir7=`absPath "$solr_distrib/example/solr-webapp/webapp/WEB-INF/lib"`
-
-#echo "classpath: $dir1/*:$dir2/*:$dir3/*:$dir4/*:$dir5/*:$dir6/*:$dir7/*"
-export HADOOP_CLASSPATH="$dir1/*:$dir2/*:$dir3/*:$dir4/*:$dir5/*:$dir6/*:$dir7/*"
-
-
-lib1=`ls -m $dir1/*.jar | tr -d ' \n'`
-lib2=`ls -m $dir2/*.jar | tr -d ' \n'`
-lib3=`ls -m $dir3/*.jar | tr -d ' \n'`
-lib4=`ls -m $dir4/*.jar | tr -d ' \n'`
-lib5=`ls -m $dir5/*.jar | tr -d ' \n'`
-lib6=`ls -m $dir6/*.jar | tr -d ' \n'`
-lib7=`ls -m $dir7/*.jar | tr -d ' \n'`
-
-libjar="$lib1,$lib2,$lib3,$lib4,$lib5,$lib6,$lib7"
-
-#echo "libjar: $libjar"
-
-$hadoop_distrib/bin/hadoop --config $hadoop_conf_dir jar $solr_distrib/dist/solr-map-reduce-*.jar -D 'mapred.child.java.opts=-Xmx500m' -libjars "$libjar" --morphline-file readAvroContainer.conf --zk-host 127.0.0.1:9983 --output-dir hdfs://127.0.0.1:8020/outdir --collection $collection --log4j log4j.properties --go-live --verbose "hdfs://127.0.0.1:8020/indir"
+$hadoop_distrib/bin/hadoop --config $hadoop_conf_dir jar $solr_distrib/dist/solr-map-reduce-*.jar -D 'mapred.child.java.opts=-Xmx500m' -libjars "$HADOOP_LIBJAR" --morphline-file readAvroContainer.conf --zk-host 127.0.0.1:9983 --output-dir hdfs://127.0.0.1:8020/outdir --collection $collection --log4j log4j.properties --go-live --verbose "hdfs://127.0.0.1:8020/indir"

@@ -64,7 +64,7 @@ Links
 
 Running Solr on HDFS - https://cwiki.apache.org/confluence/display/solr/Running+Solr+on+HDFS
 
-Morphlines - http://cloudera.github.io/cdk/docs/current/cdk-morphlines/index.html
+Morphlines - http://kitesdk.org/docs/current/kite-morphlines/index.html
 
 
 Errata

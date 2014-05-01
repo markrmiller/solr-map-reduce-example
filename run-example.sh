@@ -12,9 +12,9 @@ tmpdir=/tmp/solr-map-reduce
 ## Solr + Hadoop Dists
 #######################
 
-# Using a recent Solr nightly build from Solr trunk
-solr_distrib="solr-4.7-2014-02-12_02-54-24"
-solr_distrib_url="https://builds.apache.org/job/Solr-Artifacts-4.x/lastSuccessfulBuild/artifact/solr/package/$solr_distrib.tgz"
+# Using Solr 4.8
+solr_distrib="solr-4.8.0"
+solr_distrib_url="http://apache.mirrors.lucidnetworks.net/lucene/solr/4.8.0/$solr_distrib.tgz"
 
 # you should replace with a local mirror. Find one at http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.2.0/
 hadoop_distrib="hadoop-2.2.0"

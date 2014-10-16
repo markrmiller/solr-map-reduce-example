@@ -13,8 +13,9 @@ tmpdir=/tmp/solr-map-reduce
 #######################
 
 # Using Solr 4.8
-solr_distrib="solr-4.8.0"
-solr_distrib_url="http://apache.mirrors.lucidnetworks.net/lucene/solr/4.8.0/$solr_distrib.tgz"
+solr_version="4.8.1"
+solr_distrib="solr-$solr_version"
+solr_distrib_url="http://apache.mirrors.lucidnetworks.net/lucene/solr/$solr_version/$solr_distrib.tgz"
 
 # you should replace with a local mirror. Find one at http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.2.0/
 hadoop_distrib="hadoop-2.2.0"

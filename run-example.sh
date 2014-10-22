@@ -12,8 +12,8 @@ tmpdir=/tmp/solr-map-reduce
 ## Solr + Hadoop Dists
 #######################
 
-# Using Solr 4.8
-solr_version="4.8.1"
+# Using Solr 4.10
+solr_version="4.10.1"
 solr_distrib="solr-$solr_version"
 solr_distrib_url="http://apache.mirrors.lucidnetworks.net/lucene/solr/$solr_version/$solr_distrib.tgz"
 

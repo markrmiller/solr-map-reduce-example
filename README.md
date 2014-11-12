@@ -48,7 +48,7 @@ This is currently using:
 
 Hadoop 2.2.0
 
-Solr 4.8
+Solr 4.10.1
 
 
 Web URLs

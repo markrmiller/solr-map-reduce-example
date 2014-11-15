@@ -41,6 +41,8 @@ export HADOOP_CONF_DIR=$hadoop_conf_dir
 
 # 
 ## Build an index with map-reduce and deploy it to SolrCloud
+## Add --dry-run parameter to the end to see it run without 
+## actually putting the documents into Solr!
 #######################
 
 source $solr_distrib/example/scripts/map-reduce/set-map-reduce-classpath.sh

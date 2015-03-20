@@ -46,10 +46,13 @@ Software Versions
 
 This is currently using:
 
-Hadoop 2.2.0
+Hadoop 2.6.0
 
-Solr 4.8
+Solr 4.10.4
 
+jdk 1.7.0_75
+
+not support jdk 1.8.0 upto cause  XPathFactory & SaxonHE 9.4.0.43 
 
 Web URLs
 ----------------------

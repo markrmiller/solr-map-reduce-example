@@ -13,12 +13,14 @@ tmpdir=/tmp/solr-map-reduce
 #######################
 
 # Using Solr 4.8
-solr_distrib="solr-4.8.0"
-solr_distrib_url="http://apache.mirrors.lucidnetworks.net/lucene/solr/4.8.0/$solr_distrib.tgz"
+solr_distrib="solr-4.10.4"
+solr_distrib_url="http://apache.mirrors.lucidnetworks.net/lucene/solr/4.10.4/$solr_distrib.tgz"
+#solr_distrib="solr-4.8.1"
+#solr_distrib_url="http://apache.mirrors.lucidnetworks.net/lucene/solr/4.8.1/$solr_distrib.tgz"
 
 # you should replace with a local mirror. Find one at http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.2.0/
-hadoop_distrib="hadoop-2.2.0"
-hadoop_distrib_url="http://www.eng.lsu.edu/mirrors/apache/hadoop/common/hadoop-2.2.0/$hadoop_distrib.tar.gz"
+hadoop_distrib="hadoop-2.6.0"
+hadoop_distrib_url="http://apache.mirror.cdnetworks.com/hadoop/common/hadoop-2.6.0/$hadoop_distrib.tar.gz"
 
 #########################################################
 # NameNode port: 8020, DataNode ports: 50010, 50020, ResourceManager port: 8032 ZooKeeper port: 9983, Solr port: 8983

@@ -20,4 +20,14 @@
     <value>1</value>
   </property>
 
+  <property>
+    <name>mapreduce.reduce.java.opt</name>
+    <value>-XX:ReservedCodeCacheSize=100M -XX:MaxMetaspaceSize=256m -XX:CompressedClassSpaceSize=256m -Xmx1536m -Xms512m -Djava.net.preferIPv4Stack=true</value>
+  </property>
+
+  <property>
+    <name>mapreduce.job.classloader</name>
+    <value>true</value>
+  </property>
+  
 </configuration>

@@ -46,9 +46,9 @@ Software Versions
 
 This is currently using:
 
-Hadoop 2.2.0
+Hadoop 2.6.0
 
-Solr 4.8
+Solr 5.2.1
 
 
 Web URLs

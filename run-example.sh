@@ -6,6 +6,9 @@
 # Should run on linux/OSX.
 #######################
 
+# Enable to see commands run for debugging
+#set -x
+
 # this gets hard coded in the configs - keep in sync
 tmpdir=/tmp/solr-map-reduce
 
@@ -14,11 +17,11 @@ tmpdir=/tmp/solr-map-reduce
 
 solr_ver="5.2.1"
 solr_distrib="solr-$solr_ver"
-solr_distrib_url="http://apache.mirrors.hoobly.com/lucene/solr/$solr_ver/$solr_distrib.tgz"
+solr_distrib_url="http://archive.apache.org/dist/lucene/solr/$solr_ver/$solr_distrib.tgz"
 
 # you should replace with a local mirror. Find one at http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.2.0/
 hadoop_distrib="hadoop-2.6.0"
-hadoop_distrib_url="http://www.trieuvan.com/apache/hadoop/common/$hadoop_distrib/$hadoop_distrib.tar.gz"
+hadoop_distrib_url="http://archive.apache.org/dist/hadoop/common/$hadoop_distrib/$hadoop_distrib.tar.gz"
 
 #########################################################
 # NameNode port: 8020, DataNode ports: 50010, 50020, ResourceManager port: 8032 ZooKeeper port: 9983, Solr port: 8983
@@ -52,7 +55,7 @@ rm -f -r $tmpdir
 
 # get hadoop
 if [ ! -f "$hadoop_distrib.tar.gz" ]; then
-    curl -o $hadoop_distrib.tar.gz "$hadoop_distrib_url" 
+    curl -o $hadoop_distrib.tar.gz "$hadoop_distrib_url"
     if [[ $? -ne 0 ]]
     then
       echo "Failed to download hadoop at $hadoop_distrib"
@@ -102,6 +105,13 @@ else
     echo "$solr_distrib.tgz already extracted"
 fi
 
+#  tar -zxf
+cd $solr_distrib
+unzip -o server/webapps/solr.war -d server/solr-webapp/webapp
+# Patch map reduce environment for MacOS support. (sed expression shipped with solr only works on linux)
+#patch server/scripts/map-reduce/set-map-reduce-classpath.sh < ../solr-map-reduce-classpath.sh.diff
+cd ..
+
 ## Harmonize Conflicting Jar Dependencies
 #######################
 
@@ -112,7 +122,7 @@ find $hadoop_distrib -name "httpclient-*.jar" -type f -exec rm {} \;
 find $hadoop_distrib -name "httpcore-*.jar" -type f -exec rm {} \;
 
 solr_client=$solr_distrib/server/solr-webapp/webapp/WEB-INF/lib/httpclient-$solr_http_client_version.jar
-solr_core=$solr_distrib/server/solr-webapp/webapp/WEB-INF/lib/httpcore-$solr_http_client_version.jar
+solr_corer=$solr_distrib/server/solr-webapp/webapp/WEB-INF/lib/httpcore-$solr_http_client_version.jar
 
 cp $solr_client $hadoop_distrib/share/hadoop/tools/lib
 cp $solr_corer $hadoop_distrib/share/hadoop/tools/lib
@@ -126,6 +136,9 @@ cp $solr_corer $hadoop_distrib/share/hadoop/httpfs/tomcat/webapps/webhdfs/WEB-IN
 cp $solr_client $hadoop_distrib/share/hadoop/common/lib
 cp $solr_corer $hadoop_distrib/share/hadoop/common/lib
 
+
+# Fix JAVA_HOME evaluation on OSX
+#sed -e "s/\(export JAVA_HOME=\)(\(.*\))/\1\2/" -i -f $hadoop_distrib/libexec/hadoop-config.sh
 
 ## Start HDFS+YARN
 #######################
@@ -195,9 +208,6 @@ rm -r -f server/solr/zoo_data
 rm -r -f server/solr/collection1
 rm -f server/server.log
 
-#  tar -zxf
-unzip -o server/webapps/solr.war -d server/solr-webapp/webapp
-
 # fix bad paths in release
 sed -i -- 's/example/server/g' server/scripts/map-reduce/set-map-reduce-classpath.sh
 
@@ -210,13 +220,37 @@ echo "Upload config files to zookeeper..."
 java -classpath "server/solr-webapp/webapp/WEB-INF/lib/*:server/lib/ext/*" org.apache.solr.cloud.ZkCLI -zkhost 127.0.0.1:9983 -cmd upconfig --confdir server/solr/configsets/basic_configs/conf --confname basic_configs -runzk 8983 -solrhome server/solr
 
 
+echo "Starting Solr Server 1"
 cd server
-java -DSTOP.PORT=7983 -DSTOP.KEY=key -jar start.jar --module=http --stop
-java -Xmx512m -DzkRun -DnumShards=2 -Dsolr.directoryFactory=solr.HdfsDirectoryFactory -Dsolr.lock.type=hdfs -Dsolr.hdfs.home=hdfs://127.0.0.1:8020/solr1 -Dsolr.hdfs.confdir=$hadoop_conf_dir -DSTOP.PORT=7983 -DSTOP.KEY=key -jar start.jar --module=http 1>server.log 2>&1 &
+java -DSTOP.PORT=7983 -DSTOP.KEY=key -jar start.jar --module=http --stop 2>/dev/null
+java -Xmx512m \
+    -Djetty.port=8983 \
+    -DzkRun \
+    -DnumShards=2 \
+    -Dsolr.directoryFactory=solr.HdfsDirectoryFactory \
+    -Dsolr.lock.type=hdfs \
+    -Dsolr.hdfs.home=hdfs://127.0.0.1:8020/solr1 \
+    -Dsolr.hdfs.confdir=$hadoop_conf_dir \
+    -DSTOP.PORT=7983 \
+    -DSTOP.KEY=key \
+    -jar start.jar \
+    --module=http 1>server.log 2>&1 &
 
+echo "Starting Solr Server 2"
 cd ../server2
-java -DSTOP.PORT=6574 -DSTOP.KEY=key -jar start.jar --module=http --stop
-java -Xmx512m -Djetty.port=7574 -DzkHost=127.0.0.1:9983 -DnumShards=2 -Dsolr.directoryFactory=solr.HdfsDirectoryFactory -Dsolr.lock.type=hdfs -Dsolr.hdfs.home=hdfs://127.0.0.1:8020/solr2 -Dsolr.hdfs.confdir=$hadoop_conf_dir -DSTOP.PORT=6574 -DSTOP.KEY=key -jar start.jar --module=http 1>server2.log 2>&1 &
+java -DSTOP.PORT=6574 -DSTOP.KEY=key -jar start.jar --module=http --stop 2>/dev/null
+java -Xmx512m \
+    -Djetty.port=7574 \
+    -DzkHost=127.0.0.1:9983 \
+    -DnumShards=2 \
+    -Dsolr.directoryFactory=solr.HdfsDirectoryFactory \
+    -Dsolr.lock.type=hdfs \
+    -Dsolr.hdfs.home=hdfs://127.0.0.1:8020/solr2 \
+    -Dsolr.hdfs.confdir=$hadoop_conf_dir \
+    -DSTOP.PORT=6574 \
+    -DSTOP.KEY=key \
+    -jar start.jar \
+    --module=http 1>server2.log 2>&1 &
 
 # wait for solr to be ready
 sleep 15
@@ -225,10 +259,21 @@ curl "127.0.0.1:8983/solr/admin/collections?action=CREATE&name=collection1&numSh
 
 cd ../..
 
-# 
+#
 ## Build an index with map-reduce and deploy it to SolrCloud
 #######################
+echo "Building solr index with map reduce"
 
 source $solr_distrib/server/scripts/map-reduce/set-map-reduce-classpath.sh
 
-$hadoop_distrib/bin/hadoop --config $hadoop_conf_dir jar $solr_distrib/dist/solr-map-reduce-*.jar -D 'mapred.child.java.opts=-Xmx500m' -libjars "$HADOOP_LIBJAR" --morphline-file readAvroContainer.conf --zk-host 127.0.0.1:9983 --output-dir hdfs://127.0.0.1:8020/outdir --collection $collection --log4j log4j.properties --go-live --verbose "hdfs://127.0.0.1:8020/indir"
+$hadoop_distrib/bin/hadoop --config $hadoop_conf_dir \
+  jar $solr_distrib/dist/solr-map-reduce-*.jar \
+  -D 'mapred.child.java.opts=-Xmx500m' \
+  -libjars "$HADOOP_LIBJAR" \
+  --morphline-file readAvroContainer.conf \
+  --zk-host 127.0.0.1:9983 \
+  --output-dir hdfs://127.0.0.1:8020/outdir \
+  --collection $collection \
+  --log4j log4j.properties \
+  --go-live \
+  --verbose "hdfs://127.0.0.1:8020/indir"

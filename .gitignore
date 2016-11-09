@@ -2,3 +2,4 @@
 /hadoop-*
 *~
 example*.log
+.vagrant

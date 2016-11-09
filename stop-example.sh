@@ -21,8 +21,8 @@ hadoop-*/sbin/yarn-daemon.sh --config $hadoop_conf_dir stop nodemanager
 
 cd solr*
 
-cd example
+cd server
 java -DSTOP.PORT=7983 -DSTOP.KEY=key -jar start.jar --stop
 
-cd ../example2
+cd ../server2
 java -DSTOP.PORT=6574 -DSTOP.KEY=key -jar start.jar --stop

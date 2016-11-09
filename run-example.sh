@@ -208,9 +208,6 @@ rm -r -f server/solr/zoo_data
 rm -r -f server/solr/collection1
 rm -f server/server.log
 
-#  tar -zxf
-#unzip -o server/webapps/solr.war -d server/solr-webapp/webapp
-
 # fix bad paths in release
 sed -i -- 's/example/server/g' server/scripts/map-reduce/set-map-reduce-classpath.sh
 
